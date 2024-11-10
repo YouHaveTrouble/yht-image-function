@@ -1,0 +1,91 @@
+---
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="Astro description" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<title>{title}</title>
+	</head>
+	<body>
+		<slot />
+	</body>
+</html>
+<style is:global>
+	main {
+		display: flex;
+		flex-direction: column;
+		max-width: 1000px;
+		padding: 1rem;
+		text-align: center;
+		gap: 1rem;
+	}
+
+	* {
+		box-sizing: border-box;
+		margin: 0;
+		padding: 0;
+		font-family: system-ui, sans-serif;
+		font-weight: normal;
+		vertical-align: baseline;
+		overflow-wrap: break-word;
+		-webkit-font-smoothing: antialiased;
+	}
+
+	body {
+		line-height: 1.5;
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		align-items: center;
+		background-color: #111111;
+		color: white;
+	}
+
+	ol, ul {
+		list-style: none;
+	}
+
+	blockquote, q {
+		quotes: none;
+	}
+
+	table {
+		border-collapse: collapse;
+		border-spacing: 0;
+	}
+
+	button {
+		border: none;
+		background: none;
+		outline: none;
+		font-size: inherit;
+	}
+
+	button:focus-visible {
+		outline: 2px solid black;
+	}
+
+	input {
+		border: none;
+		outline: none;
+	}
+
+	input:focus-visible {
+		outline: 2px solid black;
+	}
+
+	img, picture, video, canvas, svg {
+		display: block;
+		max-width: 100%;
+	}
+</style>
