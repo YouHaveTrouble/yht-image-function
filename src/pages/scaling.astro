@@ -98,7 +98,7 @@ supportedExtensions.add(".svg"); // svg is a special case
         const link = document.createElement("a");
         link.textContent = listItem.getAttribute("data-file");
         link.href = url;
-        link.download = link.textContent + `_scaled_${scale}x.${FileMimeType[file.type]}`;
+        link.download = link.textContent + `_scaled_${scale}x.${fileExtension}`;
         link.style.color = "white";
         listItem.textContent = "";
         listItem.appendChild(link);
