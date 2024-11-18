@@ -1,10 +1,12 @@
 ---
+import MainSite from "../components/MainSite.astro";
 interface Props {
   title: string;
   description: string;
+  backButton?: boolean;
 }
 
-const {title, description} = Astro.props;
+const {title, description, backButton = true} = Astro.props;
 const fullTitle = `${title} | YHT's Image Functions`;
 ---
 <html lang="en">
@@ -27,6 +29,7 @@ const fullTitle = `${title} | YHT's Image Functions`;
   <meta property="twitter:description" content={description}/>
 </head>
 <body>
+{backButton && <MainSite/>}
 <main>
   <slot/>
 </main>
@@ -37,7 +40,7 @@ const fullTitle = `${title} | YHT's Image Functions`;
     display: flex;
     flex-direction: column;
     max-width: 1000px;
-    padding: 1rem;
+    padding: 3rem 1rem;
     text-align: center;
     gap: 1rem;
   }
