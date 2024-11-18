@@ -3,11 +3,38 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="YHT's Image Functions" description="Various image processing functions that all happen on your browser">
-	<main>
-		<h1>YHT's Image Functions</h1>
-
-		<ul>
-			<li><a href="/scaling">Scaling</a></li>
-		</ul>
-	</main>
+  <main>
+    <h1>YHT's Image Functions</h1>
+    <ul>
+      <li><a href="/scaling">Scaling</a></li>
+      <li><a href="/format">Format Conversion</a></li>
+    </ul>
+  </main>
 </Layout>
+
+<style lang="scss">
+  main {
+    padding-block: 6rem;
+  }
+
+  ul {
+    font-size: 1.2rem;
+    line-height: 1.4;
+
+    li {
+      list-style: disc;
+      text-align: start;
+
+      a {
+        color: white;
+        text-decoration: none;
+        transition: border-bottom-color 0.1s;
+        border-bottom: 1px solid transparent;
+
+        &:hover {
+          border-bottom-color: white;
+        }
+      }
+    }
+  }
+</style>

@@ -88,9 +88,14 @@ const fullTitle = `${title} | YHT's Image Functions`;
     outline: 2px solid black;
   }
 
-  input {
+  select, input {
     border: none;
     outline: none;
+    width: 100%;
+    max-width: 100px;
+    padding: 0.25rem;
+    font-size: 1.2rem;
+    text-align: center;
   }
 
   input:focus-visible {
@@ -117,6 +122,10 @@ const fullTitle = `${title} | YHT's Image Functions`;
     &:disabled {
       background-color: #6c757d;
       cursor: not-allowed;
+    }
+
+    &:focus-visible {
+      outline: 1px solid white;
     }
   }
 </style>
