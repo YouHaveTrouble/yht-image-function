@@ -1,0 +1,204 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+import {FileFormatExtension, ImageInputs,} from "../util/ImageExtenstion";
+const inputExtensions = new Set<string>();
+for (const key of ImageInputs) {
+  inputExtensions.add("." + key);
+}
+
+const outputExtensions: {[key:string]: string} = {};
+for (const key in FileFormatExtension) {
+  if (key === "svg") continue; // can't make svg images from other formats
+  outputExtensions[FileFormatExtension[key]] = key;
+}
+---
+<Layout title="Format Conversion" description="Change image type">
+  <h1>YHT's Image File Format Converter</h1>
+  <p>
+    Upload images to change their file format
+  </p>
+  <div class="upload">
+    <div>
+      <input type="file" multiple accept={Array.from(inputExtensions).join(",")} id="file"/>
+      <label class="button" for="file" tabindex="0">Upload images</label>
+    </div>
+    <div class="input">
+      <label for="extension">Format:</label>
+      <select id="extension">
+        {Object.keys(outputExtensions).map((key) => (
+          <option value={key}>{outputExtensions[key]}</option>
+        ))}
+      </select>
+    </div>
+    <div class="buttons">
+      <button data-action class="button" role="button" tabindex="0" disabled>Convert!</button>
+      <button data-download-all class="button" role="button" tabindex="0" disabled>Download all</button>
+    </div>
+    <ul class="imageList"></ul>
+  </div>
+</Layout>
+
+<style lang="scss">
+
+  .upload {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .input {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .imageList {
+      display: flex;
+      flex-direction: column;
+      padding-block: 1rem;
+      gap: 0.2rem;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 0.25rem;
+    }
+  }
+</style>
+
+<script>
+  import {FileExtensionFormat, setExtension} from "../util/ImageExtenstion";
+
+  const fileUpload = document.getElementById("file");
+  const extension = document.getElementById("extension");
+  const imageList = document.querySelector(".imageList");
+  const goButton = document.querySelector("[data-action]");
+  const downloadAllButton = document.querySelector("[data-download-all]");
+
+  if (!(fileUpload instanceof HTMLInputElement)) {
+    throw new Error("File input not found");
+  }
+  if (!(imageList instanceof HTMLUListElement)) {
+    throw new Error("Image list not found");
+  }
+  if (!(goButton instanceof HTMLButtonElement)) {
+    throw new Error("Go button not found");
+  }
+  if (!(downloadAllButton instanceof HTMLButtonElement)) {
+    throw new Error("Download all button not found");
+  }
+  if (!(extension instanceof HTMLSelectElement)) {
+    throw new Error("Extension input not found");
+  }
+
+  fileUpload.addEventListener("change", async () => {
+    imageList.innerHTML = "";
+    goButton.disabled = true;
+    downloadAllButton.disabled = true;
+
+    const files = fileUpload.files;
+    if (!files) return;
+
+    for (const file of files) {
+      const listItem = document.createElement("li");
+      listItem.setAttribute("data-file", file.name);
+      listItem.textContent = file.name;
+      imageList.appendChild(listItem);
+    }
+    goButton.disabled = false;
+  });
+
+  goButton.addEventListener("click", async () => {
+    const files = fileUpload.files;
+    if (!files) return;
+    const mime = extension.value;
+    const ext = FileExtensionFormat[mime];
+
+    if (!ext) {
+      throw new Error("Invalid extension");
+    }
+
+    goButton.disabled = true;
+    const futures = [];
+
+    for (const file of files) {
+      futures.push(new Promise<void>(async (resolve, reject) => {
+        const url = await convertImage(file);
+        const listItem = imageList.querySelector(`[data-file="${file.name}"]`);
+        if (!listItem) {
+          reject(new Error("Could not find list item"));
+          return;
+        }
+        const link = document.createElement("a");
+        const fileName = listItem.getAttribute("data-file") ?? "image";
+        link.textContent = setExtension(fileName, ext);
+        link.href = url;
+        link.download = link.textContent;
+        link.style.color = "white";
+        listItem.textContent = "";
+        listItem.appendChild(link);
+        resolve();
+      }));
+    }
+
+    await Promise.allSettled(futures);
+
+    downloadAllButton.disabled = false;
+  });
+
+  downloadAllButton.addEventListener("click", async () => {
+    const links = imageList.querySelectorAll("a");
+    for (const link of links) {
+      if (!(link instanceof HTMLAnchorElement)) continue;
+      link.click();
+    }
+  });
+
+  function convertImage(
+    file: File
+  ): Promise<string> {
+    return new Promise<string>(async (resolve, reject) => {
+
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (ctx === null) {
+        return reject(new Error("Could not get 2D context"));
+      }
+      const img = new Image();
+
+      const loadingPromise = new Promise<void>((resolve) => {
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+          resolve();
+        };
+        img.src = URL.createObjectURL(file);
+      });
+
+      // wait for image to load and turn into blob
+      await loadingPromise.catch((e) => {
+        reject(new Error("Could not load image", e));
+      });
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          reject(new Error("Could not get blob"));
+          URL.revokeObjectURL(img.src);
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        resolve(url);
+        URL.revokeObjectURL(img.src);
+      }, file.type);
+    });
+  }
+
+</script>
